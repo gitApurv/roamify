@@ -1,29 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useControl, Marker } from "react-map-gl/maplibre";
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder";
 
-// Custom geocoder API
 const geocoderApi = {
   forwardGeocode: async ({ query }) => {
     const features = [];
     try {
-      const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=geojson&polygon_geojson=1&addressdetails=1`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=geojson&polygon_geojson=1&addressdetails=1&limit=10`;
       const response = await fetch(url);
       const geojson = await response.json();
 
-      geojson.features.forEach((f) => {
-        const [minX, minY, maxX, maxY] = f.bbox;
-        const center = [minX + (maxX - minX) / 2, minY + (maxY - minY) / 2];
+      if (!geojson.features || geojson.features.length === 0) {
+        console.warn("No results from geocoder");
+        return { features: [] };
+      }
 
-        features.push({
-          type: "Feature",
-          geometry: { type: "Point", coordinates: center },
-          place_name: f.properties.display_name,
-          text: f.properties.display_name,
-          place_type: ["place"],
-          properties: f.properties,
-          center,
-        });
+      geojson.features.forEach((f) => {
+        try {
+          // Nominatim returns bbox as [minLon, minLat, maxLon, maxLat]
+          const [minLon, minLat, maxLon, maxLat] = f.bbox || [f.properties.lon, f.properties.lat, f.properties.lon, f.properties.lat];
+          const lon = (minLon + maxLon) / 2;
+          const lat = (minLat + maxLat) / 2;
+
+          features.push({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [lon, lat] },
+            place_name: f.properties.display_name || f.properties.name,
+            text: f.properties.display_name || f.properties.name,
+            place_type: ["place"],
+            properties: f.properties,
+            center: [lon, lat],
+            bbox: f.bbox,
+          });
+        } catch (itemError) {
+          console.error("Error processing feature:", itemError);
+        }
       });
     } catch (e) {
       console.error("Geocoding failed:", e);
@@ -81,6 +92,39 @@ export default function GeocoderControl(props) {
     { position: props.position }
   );
 
+  // Handle clear button visibility
+  useEffect(() => {
+    const input = document.querySelector(".maplibregl-ctrl-geocoder--input");
+    const clearButton = document.querySelector(".maplibregl-ctrl-geocoder--button");
+
+    if (!input || !clearButton) return;
+
+    const updateButtonVisibility = () => {
+      if (input.value.trim()) {
+        clearButton.style.setProperty("opacity", "1", "important");
+        clearButton.style.setProperty("visibility", "visible", "important");
+      } else {
+        clearButton.style.setProperty("opacity", "0", "important");
+        clearButton.style.setProperty("visibility", "hidden", "important");
+      }
+    };
+
+    // Update on input change and after button click
+    input.addEventListener("input", updateButtonVisibility);
+    input.addEventListener("change", updateButtonVisibility);
+    clearButton.addEventListener("click", () => {
+      setTimeout(updateButtonVisibility, 50);
+    });
+
+    // Initial check
+    updateButtonVisibility();
+
+    return () => {
+      input.removeEventListener("input", updateButtonVisibility);
+      input.removeEventListener("change", updateButtonVisibility);
+    };
+  }, [geocoder]);
+
   if (geocoder._map) {
     const setters = {
       proximity: "setProximity",
@@ -111,8 +155,9 @@ export default function GeocoderControl(props) {
 
 GeocoderControl.defaultProps = {
   marker: true,
-  onLoading: () => {},
-  onResults: () => {},
-  onResult: () => {},
-  onError: () => {},
+  onLoading: () => { },
+  onResults: () => { },
+  onResult: () => { },
+  onError: () => { },
 };
+
