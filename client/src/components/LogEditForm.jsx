@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createLogEdit } from "./api";
+import { createLogEdit } from "../api/api";
 
 const LogEditForm = ({ entry, onClose }) => {
   const [loading, setLoading] = useState(false);
@@ -50,8 +50,7 @@ const LogEditForm = ({ entry, onClose }) => {
       data.append("upload_preset", "Roamify");
 
       const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${
-          import.meta.env.VITE_CLOUDINARY_CLOUD
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD
         }/image/upload`,
         {
           method: "POST",
@@ -89,19 +88,11 @@ const LogEditForm = ({ entry, onClose }) => {
       component="form"
       onSubmit={handleSubmit(handleLogEdit)}
       sx={{
-        maxWidth: 320,
-        maxHeight: 400,
-        overflowY: "auto",
-        p: 1,
         display: "flex",
         flexDirection: "column",
         gap: 2,
       }}
     >
-      <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
-        Edit Travel Log
-      </Typography>
-
       {error && <Alert severity="error">{error}</Alert>}
 
       <TextField

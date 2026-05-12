@@ -1,50 +1,45 @@
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
   InputAdornment,
   TextField,
-  Alert,
+  Typography,
 } from "@mui/material";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { loginUser } from "./api";
+import { signupUser } from "../api/api";
 
-const LoginForm = ({ onClose }) => {
+const SignupForm = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const { register, handleSubmit } = useForm();
 
-  const handleLogin = async (data) => {
-    setError("");
+  const handleSignup = async (data) => {
     setLoading(true);
     try {
-      const response = await loginUser(data);
-      console.log(response);
+      const response = await signupUser(data);
       if (!response.ok) {
-        throw new Error(response.message || "Invalid credentials");
+        throw new Error(response.message);
       }
       onClose();
     } catch (err) {
-      console.log(err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <Box
       component="form"
-      onSubmit={handleSubmit(handleLogin)}
+      onSubmit={handleSubmit(handleSignup)}
       sx={{
         display: "flex",
         flexDirection: "column",
-        gap: 2,
-        p: 1,
+        gap: 2.5,
       }}
     >
       {error && <Alert severity="error">{error}</Alert>}
@@ -53,8 +48,14 @@ const LoginForm = ({ onClose }) => {
         label="Email"
         type="email"
         variant="outlined"
-        {...register("email")}
-        required
+        fullWidth
+        {...register("email", {
+          required: "Email is required",
+          pattern: {
+            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+            message: "Invalid email address",
+          },
+        })}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -68,8 +69,14 @@ const LoginForm = ({ onClose }) => {
         label="Password"
         type="password"
         variant="outlined"
-        {...register("password")}
-        required
+        fullWidth
+        {...register("password", {
+          required: "Password is required",
+          minLength: {
+            value: 6,
+            message: "Password must be at least 6 characters",
+          },
+        })}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -84,11 +91,19 @@ const LoginForm = ({ onClose }) => {
         variant="contained"
         color="primary"
         disabled={loading}
+        fullWidth
+        sx={{
+          py: 1.2,
+          fontWeight: 600,
+          fontSize: "1rem",
+          textTransform: "none",
+          borderRadius: 1,
+        }}
       >
-        {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
+        {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
       </Button>
     </Box>
   );
 };
 
-export default LoginForm;
+export default SignupForm;
