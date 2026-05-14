@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createLogEntry } from "./api";
+import { createLogEntry } from "../api/api";
 
 const LogEntryForm = ({ location, onClose, loggedIn }) => {
   const [loading, setLoading] = useState(false);
@@ -45,8 +45,7 @@ const LogEntryForm = ({ location, onClose, loggedIn }) => {
       data.append("upload_preset", "Roamify");
 
       const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${
-          import.meta.env.VITE_CLOUDINARY_CLOUD
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD
         }/image/upload`,
         {
           method: "POST",
@@ -93,19 +92,11 @@ const LogEntryForm = ({ location, onClose, loggedIn }) => {
       component="form"
       onSubmit={handleSubmit(handleLogEntry)}
       sx={{
-        maxWidth: 320,
-        maxHeight: 400,
-        overflowY: "auto",
-        p: 1,
         display: "flex",
         flexDirection: "column",
         gap: 2,
       }}
     >
-      <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
-        Add Travel Log
-      </Typography>
-
       {error && <Alert severity="error">{error}</Alert>}
 
       <TextField

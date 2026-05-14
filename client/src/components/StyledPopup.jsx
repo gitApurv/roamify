@@ -5,10 +5,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 const StyledPopup = ({ entry, onEdit, onDelete }) => (
   <Box
     sx={{
-      maxWidth: 320,
-      maxHeight: 400,
-      overflowY: "auto",
-      p: 1,
       display: "flex",
       flexDirection: "column",
       gap: 2,
@@ -51,7 +47,7 @@ const StyledPopup = ({ entry, onEdit, onDelete }) => (
 
     <Box display="flex" justifyContent="space-between" gap={1} mt={1}>
       <Button
-        size="small"
+        size="large"
         variant="outlined"
         startIcon={<EditIcon />}
         onClick={() => onEdit(entry)}
@@ -59,7 +55,7 @@ const StyledPopup = ({ entry, onEdit, onDelete }) => (
         Edit
       </Button>
       <Button
-        size="small"
+        size="large"
         variant="contained"
         color="error"
         startIcon={<DeleteIcon />}
